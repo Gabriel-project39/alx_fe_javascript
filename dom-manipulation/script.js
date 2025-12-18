@@ -16,14 +16,17 @@ function saveQuotes() {
 // ====== Populate Categories (REQUIRED) ======
 function populateCategories() {
   const select = document.getElementById("categorySelect");
+  if (!select) return;
+
   select.innerHTML = "";
 
-  const defaultOption = document.createElement("option");
-  defaultOption.value = "All";
-  defaultOption.textContent = "All";
-  select.appendChild(defaultOption);
+  // Default option
+  const allOption = document.createElement("option");
+  allOption.value = "All";
+  allOption.textContent = "All";
+  select.appendChild(allOption);
 
-  // Extract unique categories
+  // ✅ Extract unique categories
   const categories = [...new Set(quotes.map(q => q.category))];
 
   categories.forEach(category => {
@@ -33,7 +36,7 @@ function populateCategories() {
     select.appendChild(option);
   });
 
-  // Restore last selected category
+  // ✅ Restore last selected category
   const savedCategory = localStorage.getItem("selectedCategory") || "All";
   select.value = savedCategory;
 }
@@ -44,7 +47,7 @@ function showRandomQuote(list = quotes) {
   quoteDisplay.innerHTML = "";
 
   if (list.length === 0) {
-    quoteDisplay.textContent = "No quotes available!";
+    quoteDisplay.textContent = "No quotes available for this category!";
     return;
   }
 
@@ -59,16 +62,16 @@ function showRandomQuote(list = quotes) {
 
   quoteDisplay.appendChild(p);
   quoteDisplay.appendChild(small);
-
-  sessionStorage.setItem("lastQuote", JSON.stringify(quote));
 }
 
 // ====== Filter Quote (REQUIRED) ======
 function filterQuote() {
   const select = document.getElementById("categorySelect");
+  if (!select) return;
+
   const selectedCategory = select.value;
 
-  // Save selected category
+  // ✅ Save selected category
   localStorage.setItem("selectedCategory", selectedCategory);
 
   let filteredQuotes = quotes;
@@ -77,6 +80,7 @@ function filterQuote() {
     filteredQuotes = quotes.filter(q => q.category === selectedCategory);
   }
 
+  // ✅ Update displayed quotes
   showRandomQuote(filteredQuotes);
 }
 
@@ -96,25 +100,15 @@ function createAddQuoteForm() {
   addButton.textContent = "Add Quote";
   addButton.addEventListener("click", addQuote);
 
+  // ✅ Category dropdown exists BEFORE populateCategories
   const categorySelect = document.createElement("select");
   categorySelect.id = "categorySelect";
   categorySelect.addEventListener("change", filterQuote);
-
-  const exportBtn = document.createElement("button");
-  exportBtn.textContent = "Export Quotes";
-  exportBtn.addEventListener("click", exportToJsonFile);
-
-  const fileInput = document.createElement("input");
-  fileInput.type = "file";
-  fileInput.accept = "application/json";
-  fileInput.addEventListener("change", importFromJsonFile);
 
   container.appendChild(textInput);
   container.appendChild(categoryInput);
   container.appendChild(addButton);
   container.appendChild(categorySelect);
-  container.appendChild(fileInput);
-  container.appendChild(exportBtn);
 
   document.body.appendChild(container);
 }
@@ -136,6 +130,8 @@ function addQuote() {
   });
 
   saveQuotes();
+
+  // ✅ Update categories and filtering in real time
   populateCategories();
   filterQuote();
 
@@ -143,44 +139,12 @@ function addQuote() {
   document.getElementById("newQuoteCategory").value = "";
 }
 
-// ====== Export to JSON ======
-function exportToJsonFile() {
-  const jsonData = JSON.stringify(quotes, null, 2);
-  const blob = new Blob([jsonData], { type: "application/json" });
-
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "quotes.json";
-  a.click();
-
-  URL.revokeObjectURL(url);
-}
-
-// ====== Import from JSON ======
-function importFromJsonFile(event) {
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    try {
-      const importedQuotes = JSON.parse(e.target.result);
-      if (!Array.isArray(importedQuotes)) throw new Error();
-
-      quotes.push(...importedQuotes);
-      saveQuotes();
-      populateCategories();
-      filterQuote();
-    } catch {
-      alert("Invalid JSON file");
-    }
-  };
-  reader.readAsText(event.target.files[0]);
-}
-
 // ====== Load Page ======
 window.onload = function () {
   createAddQuoteForm();
   populateCategories();
 
+  // ✅ Restore selected category on load
   const savedCategory = localStorage.getItem("selectedCategory") || "All";
   document.getElementById("categorySelect").value = savedCategory;
 
