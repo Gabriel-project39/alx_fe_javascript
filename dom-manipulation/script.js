@@ -13,7 +13,7 @@ function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
-// ====== Show Random Quote (REQUIRED NAME) ======
+// ====== Show Random Quote (REQUIRED) ======
 function showRandomQuote() {
   const quoteDisplay = document.getElementById("quoteDisplay");
   quoteDisplay.innerHTML = "";
@@ -38,7 +38,7 @@ function showRandomQuote() {
   sessionStorage.setItem("lastQuote", JSON.stringify(quote));
 }
 
-// ====== Create Add Quote Form (REQUIRED NAME) ======
+// ====== Create Add Quote Form (REQUIRED) ======
 function createAddQuoteForm() {
   const formDiv = document.createElement("div");
 
@@ -53,17 +53,29 @@ function createAddQuoteForm() {
   const addButton = document.createElement("button");
   addButton.id = "addQuoteBtn";
   addButton.textContent = "Add Quote";
-
   addButton.addEventListener("click", addQuote);
+
+  // ====== Import File Input (REQUIRED) ======
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "application/json";
+  fileInput.addEventListener("change", importFromJsonFile);
+
+  // ====== Export Button ======
+  const exportBtn = document.createElement("button");
+  exportBtn.textContent = "Export Quotes";
+  exportBtn.addEventListener("click", exportToJsonFile);
 
   formDiv.appendChild(textInput);
   formDiv.appendChild(categoryInput);
   formDiv.appendChild(addButton);
+  formDiv.appendChild(fileInput);
+  formDiv.appendChild(exportBtn);
 
   document.body.appendChild(formDiv);
 }
 
-// ====== Add New Quote (Logic Check) ======
+// ====== Add Quote ======
 function addQuote() {
   const text = document.getElementById("newQuoteText").value.trim();
   const category = document.getElementById("newQuoteCategory").value.trim();
@@ -73,19 +85,58 @@ function addQuote() {
     return;
   }
 
-  const newQuote = {
+  quotes.push({
     id: Date.now(),
     text,
     category
-  };
+  });
 
-  quotes.push(newQuote);
   saveQuotes();
+  showRandomQuote();
 
   document.getElementById("newQuoteText").value = "";
   document.getElementById("newQuoteCategory").value = "";
+}
 
-  showRandomQuote();
+// ====== EXPORT TO JSON (REQUIRED NAME + Blob) ======
+function exportToJsonFile() {
+  const jsonData = JSON.stringify(quotes, null, 2);
+
+  const blob = new Blob([jsonData], { type: "application/json" });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quotes.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+// ====== IMPORT FROM JSON (REQUIRED NAME) ======
+function importFromJsonFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const importedQuotes = JSON.parse(e.target.result);
+
+      if (!Array.isArray(importedQuotes)) {
+        throw new Error("Invalid JSON format");
+      }
+
+      quotes.push(...importedQuotes);
+      saveQuotes();
+      showRandomQuote();
+      alert("Quotes imported successfully!");
+    } catch (err) {
+      alert("Failed to import quotes");
+    }
+  };
+
+  reader.readAsText(file);
 }
 
 // ====== Fetch Server Quotes ======
@@ -102,31 +153,24 @@ async function fetchServerQuotes() {
 
     resolveConflicts(serverQuotes);
   } catch (err) {
-    console.log("Server fetch failed:", err);
+    console.log("Server fetch failed");
   }
 }
 
 // ====== Resolve Conflicts ======
 function resolveConflicts(serverQuotes) {
-  let updated = false;
-
   serverQuotes.forEach(sq => {
     const index = quotes.findIndex(q => q.id === sq.id);
     if (index === -1) {
       quotes.push(sq);
-      updated = true;
     } else {
       quotes[index] = sq;
-      updated = true;
     }
   });
-
-  if (updated) {
-    saveQuotes();
-  }
+  saveQuotes();
 }
 
-// ====== Load Last Quote ======
+// ====== Load ======
 window.onload = function () {
   createAddQuoteForm();
 
