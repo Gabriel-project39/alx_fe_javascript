@@ -2,56 +2,47 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dynamic Quote Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
+      max-width: 600px;
+      margin: auto;
       padding: 20px;
     }
-    #quoteDisplay {
-      font-size: 1.2em;
-      margin: 20px 0;
-      padding: 10px;
-      border: 1px solid #ddd;
-      min-height: 50px;
-    }
-    input, select {
-      margin: 5px;
+
+    input, button {
+      width: 100%;
       padding: 8px;
+      margin: 6px 0;
     }
-    button {
-      padding: 8px 15px;
-      cursor: pointer;
-      margin: 5px;
+
+    #displayQuote {
+      margin-top: 15px;
+      font-style: italic;
     }
   </style>
 </head>
 <body>
- <h1>Dynamic Quote Generator</h1>
 
-<!-- Category Filter -->
-<select id="categoryFilter" onchange="filterQuotes()">
-  <option value="all">All Categories</option>
-</select>
+  <h2>Dynamic Quote Generator</h2>
 
-<!-- Quote display -->
-<div id="quoteDisplay"></div>
+  <input id="quoteInput" type="text" placeholder="Enter quote text">
+  <input id="categoryInput" type="text" placeholder="Enter quote category">
 
-<button id="newQuote">Show New Quote</button>
+  <button onclick="addQuote()">Add Quote</button>
 
+  <!-- REQUIRED ID -->
+  <button id="newQuote">Show New Quote</button>
 
-  <h3>Add Your Own Quote</h3>
-  <div>
-    <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
-    <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-    <button id="addQuoteBtn">Add Quote</button>
-  </div>
+  <button onclick="exportToJson()">Export Quotes (JSON)</button>
 
-  <h3>Backup / Restore Quotes</h3>
-  <button id="exportQuotes">Export Quotes as JSON</button>
-  <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
+  <input type="file" accept=".json" onchange="importFromJsonFile(event)">
+
+  <div id="displayQuote"></div>
+  <ul id="quoteList"></ul>
 
   <script src="script.js"></script>
 </body>
